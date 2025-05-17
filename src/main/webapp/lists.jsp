@@ -60,7 +60,7 @@
                 <td><%= list.getName() %></td>
                 <td><%= dateFormat.format(list.getCreatedAt()) %></td>
                 <td>
-                    <a href="viewList?id=<%= list.getId() %>">View</a>
+                    <a href="viewLists?id=<%= list.getId() %>">View</a>
                     <a href="editList?id=<%= list.getId() %>">Edit</a>
                     <a href="deleteList?id=<%= list.getId() %>"
                        onclick="return confirm('Are you sure you want to delete this list?');">Delete</a>

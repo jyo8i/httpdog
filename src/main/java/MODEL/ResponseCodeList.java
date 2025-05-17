@@ -5,8 +5,29 @@ public class ResponseCodeList {
     private String description;
     private String imageUrl;
     private String dogImageUrl; 
+    private int id;
+    private int listId;
+    public ResponseCodeList() {
+    }
 
-    public String getDogImageUrl() {
+
+    public int getId() {
+		return id;
+	}
+
+	public void setId(int id) {
+		this.id = id;
+	}
+
+	public int getListId() {
+		return listId;
+	}
+
+	public void setListId(int listId) {
+		this.listId = listId;
+	}
+
+	public String getDogImageUrl() {
 		return dogImageUrl;
 	}
 

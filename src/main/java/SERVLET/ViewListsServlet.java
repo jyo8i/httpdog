@@ -1,6 +1,7 @@
 package SERVLET;
 
 import DAO.ListDAO;
+import MODEL.ResponseCodeList;
 import MODEL.SavedList;
 import MODEL.User;
 import javax.servlet.*;
@@ -21,9 +22,28 @@ public class ViewListsServlet extends HttpServlet {
 
         User user = (User) session.getAttribute("user");
 
+        String listIdParam = request.getParameter("id");
+        ListDAO dao = new ListDAO();
+        
+        if (listIdParam != null && !listIdParam.isEmpty()) {
+            try {
+                int listId = Integer.parseInt(listIdParam);
+                SavedList list = dao.getListById(listId);
+                List<ResponseCodeList> items = dao.getItemsByListId(listId);
+
+                request.setAttribute("list", list);
+                request.setAttribute("listItems", items);
+                request.getRequestDispatcher("viewList.jsp").forward(request, response);
+                return;
+            } catch (NumberFormatException e) {
+                e.printStackTrace(); // log and fallback to all lists
+            }
+        }
+        
+        
         try {
-            ListDAO dao = new ListDAO();
-            List<SavedList> savedLists = dao.getListsByUser(user.getId());
+            ListDAO dao1 = new ListDAO();
+            List<SavedList> savedLists = dao1.getListsByUser(user.getId());
             request.setAttribute("savedLists", savedLists);
 
             if (savedLists == null || savedLists.isEmpty()) {

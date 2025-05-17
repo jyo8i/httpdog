@@ -1,28 +1,54 @@
 package SERVLET;
 
 import DAO.ListDAO;
-import MODEL.ResponseCodeList;
+import MODEL.SavedList;
 
 import javax.servlet.*;
+import javax.servlet.annotation.WebServlet;
 import javax.servlet.http.*;
 import java.io.IOException;
-import java.util.ArrayList;
-
+@WebServlet("/editList")
 public class EditListServlet extends HttpServlet {
+
+    protected void doGet(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+
+        String idParam = request.getParameter("id");
+
+        if (idParam != null) {
+            try {
+                int id = Integer.parseInt(idParam);
+                ListDAO dao = new ListDAO();
+                SavedList list = dao.getListById(id);
+
+                request.setAttribute("list", list);
+            } catch (Exception e) {
+                e.printStackTrace();
+                request.setAttribute("error", "Error loading list.");
+            }
+        }
+
+        request.getRequestDispatcher("/edit.jsp").forward(request, response);
+    }
+
     protected void doPost(HttpServletRequest request, HttpServletResponse response)
             throws ServletException, IOException {
 
-        int listId = Integer.parseInt(request.getParameter("listId"));
-        String listName = request.getParameter("listName");
+        String idParam = request.getParameter("id");
+        String newName = request.getParameter("name");
 
-        @SuppressWarnings("unchecked")
-        ArrayList<ResponseCodeList> updatedItems = (ArrayList<ResponseCodeList>) request.getSession().getAttribute("updatedList");
+        try {
+            int id = Integer.parseInt(idParam);
 
-        if (updatedItems != null && listName != null) {
             ListDAO dao = new ListDAO();
-            dao.updateList(listId, listName, updatedItems);
-        }
+            dao.updateListName(id, newName);
 
-        response.sendRedirect("lists.jsp");
+            response.sendRedirect("viewLists");
+
+        } catch (Exception e) {
+            e.printStackTrace();
+            request.setAttribute("error", "Error updating list.");
+            doGet(request, response);
+        }
     }
 }
