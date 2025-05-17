@@ -61,38 +61,67 @@ public class ListDAO {
 	    }
 	}
 	public List<SavedList> getListsByUser(int userId) {
-	    System.out.println("\nDAO: Starting getListsByUser for user ID: " + userId);
 	    List<SavedList> result = new ArrayList<>();
-	    
-	    try (Connection conn = DBConnection.getConnection()) {
-	        System.out.println("DAO: Database connection established");
-	        
-	        String sql = "SELECT id, name, created_at, user_id FROM lists WHERE user_id = ? ORDER BY created_at DESC";
-	        PreparedStatement ps = conn.prepareStatement(sql);
+	    String sql = "SELECT id, name, created_at, user_id FROM lists WHERE user_id = ? ORDER BY created_at DESC";
+
+	    try (Connection conn = DBConnection.getConnection();
+	         PreparedStatement ps = conn.prepareStatement(sql)) {
+
 	        ps.setInt(1, userId);
-	        
-	        System.out.println("DAO: Executing query: " + ps.toString());
-	        ResultSet rs = ps.executeQuery();
-	        
-	        int count = 0;
-	        while (rs.next()) {
-	            SavedList list = new SavedList();
-	            list.setId(rs.getInt("id"));
-	            list.setName(rs.getString("name"));
-	            list.setCreatedAt(rs.getTimestamp("created_at"));
-	            list.setUserId(rs.getInt("user_id"));
-	            result.add(list);
-	            count++;
-	            
-	            System.out.println("DAO: Found list - ID: " + list.getId() + ", Name: " + list.getName());
+
+	        try (ResultSet rs = ps.executeQuery()) {
+	            while (rs.next()) {
+	                SavedList list = new SavedList();
+	                list.setId(rs.getInt("id"));
+	                list.setName(rs.getString("name"));
+	                list.setCreatedAt(rs.getTimestamp("created_at"));
+	                list.setUserId(rs.getInt("user_id"));
+	                result.add(list);
+	            }
 	        }
-	        System.out.println("DAO: Total lists found: " + count);
 	    } catch (SQLException e) {
-	        System.err.println("DAO ERROR: " + e.getMessage());
-	        e.printStackTrace();
+	        System.err.println("Error in getListsByUser: " + e.getMessage());
+	        throw new RuntimeException("Database error", e);
 	    }
+
 	    return result;
 	}
+    public List<ResponseCodeList> getListItems(int listId) {
+        List<ResponseCodeList> items = new ArrayList<>();
+        try (Connection conn = DBConnection.getConnection()) {
+            String sql = "SELECT * FROM list_items WHERE list_id=?";
+            PreparedStatement ps = conn.prepareStatement(sql);
+            ps.setInt(1, listId);
+            ResultSet rs = ps.executeQuery();
+            while (rs.next()) {
+                items.add(new ResponseCodeList(
+                    rs.getInt("code"),
+                    rs.getString("description"),
+                    rs.getString("image_url")
+                ));
+            }
+        } catch (Exception e) {
+            e.printStackTrace();
+        }
+        return items;
+    }
+
+    public boolean deleteList(int listId) {
+        try (Connection conn = DBConnection.getConnection()) {
+            String deleteItems = "DELETE FROM list_items WHERE list_id=?";
+            PreparedStatement ps1 = conn.prepareStatement(deleteItems);
+            ps1.setInt(1, listId);
+            ps1.executeUpdate();
+
+            String deleteList = "DELETE FROM lists WHERE id=?";
+            PreparedStatement ps2 = conn.prepareStatement(deleteList);
+            ps2.setInt(1, listId);
+            return ps2.executeUpdate() > 0;
+        } catch (Exception e) {
+            e.printStackTrace();
+            return false;
+        }
+    }
 
     public boolean updateList(int listId, String listName, ArrayList<ResponseCodeList> updatedList) {
         try (Connection conn = DBConnection.getConnection()) {
