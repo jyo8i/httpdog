@@ -11,7 +11,8 @@
   <li><a href="signup.jsp">Sign Up</a></li>
   <li><a href="search.jsp">Search HTTP Codes</a></li>
   <li><a href="lists.jsp">My Saved Lists</a></li>
-  <li><a href="LogoutServlet">Logout</a></li>
+  <li><a href="LogoutServlet" onclick="return confirm('Are you sure you want to logout?');">Logout</a></li>
 </ul>
 </body>
 </html>
+
